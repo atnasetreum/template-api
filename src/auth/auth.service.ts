@@ -1,17 +1,23 @@
 import {
+  Inject,
   Injectable,
   OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 
 import { PrismaClient } from '@prisma/client';
+import { Request } from 'express';
 
 import { LoginAuthDto } from './dto';
 import { SharedService } from 'src/shared/shared.service';
+import { REQUEST } from '@nestjs/core';
 
 @Injectable()
 export class AuthService extends PrismaClient implements OnModuleInit {
-  constructor(private readonly sharedService: SharedService) {
+  constructor(
+    private readonly sharedService: SharedService,
+    @Inject(REQUEST) private readonly req: Request,
+  ) {
     super();
   }
 
@@ -49,5 +55,26 @@ export class AuthService extends PrismaClient implements OnModuleInit {
     const serialized = this.sharedService.createCookie(token);
 
     return serialized;
+  }
+
+  logout(): string {
+    const token = this.req['requestingUser'].token as string;
+
+    const serialized = this.sharedService.createCookie(token, false);
+
+    return serialized;
+  }
+
+  checkToken(): {
+    message: string;
+  } {
+    const token = this.req.headers['authorization'].split(' ')[1];
+
+    try {
+      this.sharedService.verifyJwt(token);
+      return { message: 'Token válido.' };
+    } catch (error) {
+      throw new UnauthorizedException('Token no válido');
+    }
   }
 }

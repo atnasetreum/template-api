@@ -19,9 +19,7 @@ export class JwtMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction) {
     res.statusCode;
 
-    const token = req.cookies['access_token']
-      ? `${req.cookies['access_token']}`
-      : '';
+    const token = this.sharedService.getTokenFromCookie(req);
 
     if (!token) {
       throw new UnauthorizedException(

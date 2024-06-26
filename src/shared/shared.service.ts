@@ -4,6 +4,7 @@ import * as argon2 from 'argon2';
 import * as CryptoJS from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
+import { Request } from 'express';
 
 import { Environment, envs } from '@config';
 
@@ -22,8 +23,13 @@ export class SharedService {
     secure: this.environment === Environment.Production,
     sameSite: this.environment === Environment.Production ? 'none' : 'strict',
     path: '/',
-    domain: 'localhost',
+    domain:
+      this.environment === Environment.Production
+        ? 'comportarte.com'
+        : 'localhost',
   };
+
+  private readonly nameCookie = 'access_token';
 
   encryptPassword(password: string): Promise<string> {
     return argon2.hash(password);
@@ -75,15 +81,23 @@ export class SharedService {
     return token;
   }
 
-  verifyJwt(token: string): { id: string } {
+  verifyJwt(token: string): { id: string; token: string } {
     const decoded = jwt.verify(token, this.jwtSecret) as { id: string };
-    return { id: decoded.id };
+    return { id: decoded.id, token };
   }
 
-  createCookie(value: string): string {
-    return serialize('access_token', value, {
+  createCookie(value: string, maxAge = true): string {
+    return serialize(this.nameCookie, value, {
       ...this.optsSerialize,
-      maxAge: 1000 * 60 * 60 * 24 * 30,
+      maxAge: maxAge ? 1000 * 60 * 60 * 24 * 30 : 0,
     });
+  }
+
+  getTokenFromCookie(req: Request): string {
+    const token = req.cookies[this.nameCookie]
+      ? `${req.cookies[this.nameCookie]}`
+      : '';
+
+    return token;
   }
 }
