@@ -11,6 +11,8 @@ import { AppKeyMiddleware, JwtMiddleware } from '@shared/middlewares';
 import { SharedModule } from '@shared/shared.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { MsgWebSocketModule } from './msg-web-socket/msg-web-socket.module';
+import { ClusterService } from '@shared/services';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     UsersModule,
     SharedModule,
+    MsgWebSocketModule,
   ],
   controllers: [],
   providers: [
@@ -30,6 +33,7 @@ import { AuthModule } from './auth/auth.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    ClusterService,
   ],
 })
 export class AppModule implements NestModule {

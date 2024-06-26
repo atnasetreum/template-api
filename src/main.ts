@@ -5,8 +5,11 @@ import helmet from 'helmet';
 import * as cookieParser from 'cookie-parser';
 
 import { envs } from '@config';
-import { AppModule } from './app.module';
+import { getArrayWhiteList } from '@shared/utils';
+import { ClusterService } from '@shared/services';
+import { NODE_ENV_DEVELOPMENT } from '@shared/constants';
 import { PrismaClientExceptionFilter } from './filters/prisma-client-exception.filter';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger('Main');
@@ -30,7 +33,7 @@ async function bootstrap() {
   app.use(helmet());
 
   app.enableCors({
-    origin: `${process.env.WHITE_LIST_DOMAINS}`.split(','),
+    origin: getArrayWhiteList(),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
@@ -45,4 +48,9 @@ async function bootstrap() {
     );
   });
 }
-bootstrap();
+
+if (envs.NODE_ENV === NODE_ENV_DEVELOPMENT) {
+  bootstrap();
+} else {
+  ClusterService.clusterize(bootstrap);
+}
