@@ -1,23 +1,13 @@
-import { REQUEST } from '@nestjs/core';
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 
-import { PrismaClient, User } from '@prisma/client';
-import { Request } from 'express';
+import { PrismaClient } from '@prisma/client';
 
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { SharedService } from '@shared/shared.service';
 
 @Injectable()
 export class UsersService extends PrismaClient implements OnModuleInit {
-  constructor(
-    private readonly sharedService: SharedService,
-    @Inject(REQUEST) private readonly req: Request,
-  ) {
+  constructor(private readonly sharedService: SharedService) {
     super();
   }
 
@@ -41,10 +31,9 @@ export class UsersService extends PrismaClient implements OnModuleInit {
   }
 
   async findAll() {
-    this.req['requestingUser'] as User;
-
     const users = await this.user.findMany({
       where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
     });
 
     return this.sharedService.excludeFromList(users, ['password']);

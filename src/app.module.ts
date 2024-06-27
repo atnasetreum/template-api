@@ -27,7 +27,6 @@ import { ClusterService } from '@shared/services';
     SharedModule,
     MsgWebSocketModule,
   ],
-  controllers: [],
   providers: [
     {
       provide: APP_GUARD,

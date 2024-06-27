@@ -8,7 +8,7 @@ import { envs } from '@config';
 import { getArrayWhiteList } from '@shared/utils';
 import { ClusterService } from '@shared/services';
 import { NODE_ENV_DEVELOPMENT } from '@shared/constants';
-import { PrismaClientExceptionFilter } from './filters/prisma-client-exception.filter';
+import { PrismaClientExceptionFilter } from '@shared/filters';
 import { AppModule } from './app.module';
 
 async function bootstrap() {

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -6,7 +7,9 @@ import {
 } from '@nestjs/websockets';
 
 import { Server, Socket } from 'socket.io';
+import * as cookie from 'cookie';
 
+import { SharedService } from '@shared/shared.service';
 import { getArrayWhiteList } from '@shared/utils';
 import {
   ConnectedClients,
@@ -26,27 +29,63 @@ export class MsgWebSocketGateway
 {
   @WebSocketServer() wss: Server;
 
-  constructor(private readonly msgWebSocketService: MsgWebSocketService) {
+  private readonly logger = new Logger(MsgWebSocketGateway.name);
+
+  constructor(
+    private readonly msgWebSocketService: MsgWebSocketService,
+    private readonly sharedService: SharedService,
+  ) {
     setInterval(() => {
       this.totalRevenue();
     }, 5000);
   }
 
-  handleConnection(client: Socket) {
-    // Add your implementation here
-    console.log('Client connected:', client.id);
-    this.msgWebSocketService.addClient(client);
+  afterInit(): void {
+    this.logger.debug('Initialized');
+  }
 
-    console.log(
-      'connected-clients: ',
-      this.msgWebSocketService.countConnectedClients(),
+  private getToken(client: Socket): string {
+    const cookies = cookie.parse(client.handshake.headers.cookie);
+    const token = cookies['access_token'] || '';
+    return token;
+  }
+
+  async validateCredentials(client: Socket): Promise<string> {
+    const token = this.getToken(client);
+
+    if (!token) {
+      this.logger.error('Token not found');
+      client.disconnect(true);
+      return;
+    }
+
+    try {
+      const { id } = this.sharedService.verifyJwt(token);
+      return id;
+    } catch (error) {
+      this.logger.error('Token no válido');
+      client.disconnect(true);
+    }
+  }
+
+  async handleConnection(client: Socket): Promise<void> {
+    const userId = await this.validateCredentials(client);
+
+    this.msgWebSocketService.addClient({ client, userId });
+
+    this.logger.debug(
+      `Number of connected clients: ${this.msgWebSocketService.countConnectedClients()}`,
     );
   }
 
-  handleDisconnect(client: Socket) {
-    // Add your implementation here
-    console.log('Client disconnected:', client.id);
-    this.msgWebSocketService.removeClient(client);
+  handleDisconnect(client: Socket): void {
+    this.logger.debug(`Cliend id:${client.id} disconnected`);
+
+    const user = this.msgWebSocketService.findUserBySocketId(client.id);
+
+    if (!user) return;
+
+    this.msgWebSocketService.removeClient(user);
   }
 
   emitAll(event: string, data: object): void {
@@ -85,7 +124,7 @@ export class MsgWebSocketGateway
     ];
 
     for (const client of Object.values(clients)) {
-      client.emit('total-revenue', data);
+      client.socket.emit('total-revenue', data);
     }
   }
 }
