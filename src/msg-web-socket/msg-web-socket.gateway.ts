@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -37,7 +38,7 @@ export class MsgWebSocketGateway
   ) {
     setInterval(() => {
       this.totalRevenue();
-    }, 5000);
+    }, 3000);
   }
 
   afterInit(): void {
@@ -72,27 +73,22 @@ export class MsgWebSocketGateway
     const userId = await this.validateCredentials(client);
 
     this.msgWebSocketService.addClient({ client, userId });
-
-    this.logger.debug(
-      `Number of connected clients: ${this.msgWebSocketService.countConnectedClients()}`,
-    );
   }
 
   handleDisconnect(client: Socket): void {
-    this.logger.debug(`Cliend id:${client.id} disconnected`);
+    this.msgWebSocketService.removeClient(client);
+  }
 
-    const user = this.msgWebSocketService.findUserBySocketId(client.id);
-
-    if (!user) return;
-
-    this.msgWebSocketService.removeClient(user);
+  @SubscribeMessage('update-total-revenue')
+  handleUpdateTotalRevenue(client: Socket): void {
+    this.totalRevenue(client);
   }
 
   emitAll(event: string, data: object): void {
     this.wss.emit(event, data);
   }
 
-  totalRevenue(): void {
+  totalRevenue(client?: Socket): void {
     const clients: ConnectedClients =
       this.msgWebSocketService.getConnectedClients();
 
@@ -123,8 +119,15 @@ export class MsgWebSocketGateway
       },
     ];
 
+    if (client) {
+      client.emit('total-revenue', data);
+      return;
+    }
+
     for (const client of Object.values(clients)) {
-      client.socket.emit('total-revenue', data);
+      for (const socket of client.sockets) {
+        socket.emit('total-revenue', data);
+      }
     }
   }
 }

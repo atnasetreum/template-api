@@ -18,7 +18,7 @@ type User = Omit<
 >;
 
 interface CurrentData {
-  socket: Socket;
+  sockets: [Socket];
   user: User;
 }
 
@@ -34,10 +34,6 @@ export class MsgWebSocketService {
 
   constructor(private readonly usersService: UsersService) {}
 
-  validateClientRepited(user: User): boolean {
-    return !!this.connectedClients[user.id];
-  }
-
   async addClient({
     client,
     userId,
@@ -48,45 +44,71 @@ export class MsgWebSocketService {
     const user = await this.usersService.findOne(userId);
 
     if (!user) {
+      this.logger.error(`User with id: "${userId}" not found`);
+      client.disconnect(true);
+      return;
     }
 
-    if (this.validateClientRepited(user)) {
-      this.removeClient(user);
+    const rowCurrent = this.connectedClients[userId] || null;
+
+    this.logger.debug(`Client with email: "${user.email}" connected`);
+
+    if (rowCurrent) {
+      rowCurrent.sockets.push(client);
+      this.connectedClients[userId] = rowCurrent;
+
+      this.logger.debug(
+        `[${user.email}]: Number of connected clients: ${rowCurrent.sockets.length}`,
+      );
+
+      return;
     }
 
-    const currentData = {
-      socket: client,
+    const currentData: CurrentData = {
+      sockets: [client],
       user,
     };
 
     this.connectedClients[userId] = currentData;
 
     this.logger.debug(
-      `Client with email: "${currentData.user.email}" connected`,
+      `Number of connected clients: ${this.countConnectedClients()}`,
     );
 
-    this.loadDataInitial(currentData);
+    this.loadDataInitial(client, user);
   }
 
-  async loadDataInitial(currentData: CurrentData): Promise<void> {
+  async loadDataInitial(client: Socket, currentUser: User): Promise<void> {
     const users = await this.usersService.findAll();
 
-    currentData.socket.emit('load-data-initial', {
+    client.emit('load-data-initial', {
       users,
-      currentUser: currentData.user,
+      currentUser,
     });
   }
 
-  removeClient(user: User): void {
+  removeClient(client: Socket): void {
+    const user = this.findUserBySocketId(client.id);
+
+    if (!user) return;
+
     delete this.connectedClients[user.id];
+
+    this.logger.debug(`Cliend with email: "${user.email}" disconnected`);
   }
 
   findUserBySocketId(socketId: string): User | null {
-    const userId = Object.keys(this.connectedClients).find(
-      (key) => this.connectedClients[key].socket.id === socketId,
-    );
+    for (const id in this.connectedClients) {
+      const { sockets } = this.connectedClients[id];
 
-    return userId ? this.connectedClients[userId].user : null;
+      for (const socket of sockets) {
+        if (socket.id === socketId) {
+          return this.connectedClients[id].user;
+        }
+      }
+    }
+
+    return null;
   }
 
   countConnectedClients(): number {
