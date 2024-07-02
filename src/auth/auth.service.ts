@@ -1,3 +1,4 @@
+import { REQUEST } from '@nestjs/core';
 import {
   Inject,
   Injectable,
@@ -5,12 +6,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { PrismaClient } from '@prisma/client';
 import { Request } from 'express';
+import { PrismaClient } from '@prisma/client';
 
+import { SharedService } from '@shared/shared.service';
 import { LoginAuthDto } from './dto';
-import { SharedService } from 'src/shared/shared.service';
-import { REQUEST } from '@nestjs/core';
 
 @Injectable()
 export class AuthService extends PrismaClient implements OnModuleInit {

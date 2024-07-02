@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { MsgWebSocketModule } from './msg-web-socket/msg-web-socket.module';
 import { ClusterService } from '@shared/services';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ClusterService } from '@shared/services';
     UsersModule,
     SharedModule,
     MsgWebSocketModule,
+    NotificationsModule,
   ],
   providers: [
     {

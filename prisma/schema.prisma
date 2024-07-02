@@ -21,4 +21,17 @@ model User {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  subscriptions Subscription[] @relation("UserSubscriptions")
+}
+
+model Subscription {
+  id           String   @id @default(uuid()) @db.Uuid
+  subscription String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], name: "UserSubscriptions")
 }

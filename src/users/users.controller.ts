@@ -7,13 +7,13 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  Req,
 } from '@nestjs/common';
+
+import { User } from '@prisma/client';
 
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import { User } from '@prisma/client';
-import { Request } from 'express';
+import { CurrentUser } from '@shared/decorators';
 
 @Controller('users')
 export class UsersController {
@@ -25,9 +25,7 @@ export class UsersController {
   }
 
   @Get()
-  //findAll(@CurrentUser() currentUser: User) {
-  findAll(@Req() req: Request) {
-    const currentUser = req['requestingUser'] as User;
+  findAll(@CurrentUser() currentUser: User) {
     console.log({ currentUser });
     return this.usersService.findAll();
   }

@@ -32,8 +32,10 @@
     "baseUrl": "./",
     "paths": {
       "@config": ["src/config"],
+      "@config/*": ["src/config/*"],
       "@shared/*": ["src/shared/*"]
     },
+    "resolveJsonModule": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
   }

@@ -2,6 +2,8 @@
 postgres/
 pgadmin/
 
+src/config/vapid-keys.json
+
 # compiled output
 /dist
 /node_modules

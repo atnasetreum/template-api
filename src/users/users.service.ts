@@ -34,6 +34,9 @@ export class UsersService extends PrismaClient implements OnModuleInit {
     const users = await this.user.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'desc' },
+      /*include: {
+        subscriptions: true,
+      },*/
     });
 
     return this.sharedService.excludeFromList(users, ['password']);

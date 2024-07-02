@@ -53,6 +53,8 @@ export class MsgWebSocketService {
 
     this.logger.debug(`Client with email: "${user.email}" connected`);
 
+    this.loadDataInitial(client, user);
+
     if (rowCurrent) {
       rowCurrent.sockets.push(client);
       this.connectedClients[userId] = rowCurrent;
@@ -74,8 +76,6 @@ export class MsgWebSocketService {
     this.logger.debug(
       `Number of connected clients: ${this.countConnectedClients()}`,
     );
-
-    this.loadDataInitial(client, user);
   }
 
   async loadDataInitial(client: Socket, currentUser: User): Promise<void> {
