@@ -92,9 +92,6 @@ export class NotificationsService extends PrismaClient implements OnModuleInit {
     });
 
     if (subscriptions.length) {
-      console.log({
-        size: subscriptions.length,
-      });
       subscriptions.forEach((dataSubscription) => {
         const options = {
           title: 'Notification! by server',
@@ -134,10 +131,6 @@ export class NotificationsService extends PrismaClient implements OnModuleInit {
         this.logger.error(err);
 
         if (err.statusCode === 410) {
-          console.log({
-            id: dataSubscription.id,
-          });
-
           await this.subscription.update({
             where: {
               id: dataSubscription.id,
