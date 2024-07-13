@@ -92,31 +92,16 @@ export class MsgWebSocketGateway
     const clients: ConnectedClients =
       this.msgWebSocketService.getConnectedClients();
 
-    const getNumber = () => Math.floor(Math.random() * 50);
+    const getNumber = () => Math.floor(Math.random() * 5000);
 
     const data = [
-      {
-        id: 'Desktop',
-        data: [
-          { x: 'Jan', y: getNumber() },
-          { x: 'Feb', y: getNumber() },
-          { x: 'Mar', y: getNumber() },
-          { x: 'Apr', y: getNumber() },
-          { x: 'May', y: getNumber() },
-          { x: 'Jun', y: getNumber() },
-        ],
-      },
-      {
-        id: 'Mobile',
-        data: [
-          { x: 'Jan', y: getNumber() },
-          { x: 'Feb', y: getNumber() },
-          { x: 'Mar', y: getNumber() },
-          { x: 'Apr', y: getNumber() },
-          { x: 'May', y: getNumber() },
-          { x: 'Jun', y: getNumber() },
-        ],
-      },
+      [getNumber(), '#0000ff'],
+      [getNumber(), '#8d0073'],
+      [getNumber(), '#ba0046'],
+      [getNumber(), '#d60028'],
+      [getNumber(), '#eb0014'],
+      [getNumber(), '#fb0004'],
+      [getNumber(), '#ff0000'],
     ];
 
     if (client) {

@@ -7,6 +7,7 @@ import { serialize } from 'cookie';
 import { Request } from 'express';
 
 import { Environment, envs } from '@config';
+import { encryptString } from './utils';
 
 @Injectable()
 export class SharedService {
@@ -32,7 +33,7 @@ export class SharedService {
   private readonly nameCookie = 'access_token';
 
   encryptPassword(password: string): Promise<string> {
-    return argon2.hash(password);
+    return encryptString(password);
   }
 
   verifyPassword(hash: string, password: string): Promise<boolean> {

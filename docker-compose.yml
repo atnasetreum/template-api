@@ -14,36 +14,36 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
 
-  pgAdmin:
-    depends_on:
-      - db
-    image: dpage/pgadmin4:8.9
-    container_name: pgAdmin
-    volumes:
-      - ./pgadmin:/var/lib/pgadmin
-    ports:
-      - ${PGADMIN_PORT}:80
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${DATABASE_PASSWORD}
-    restart: always
+  # pgAdmin:
+  #   depends_on:
+  #     - db
+  #   image: dpage/pgadmin4:8.9
+  #   container_name: pgAdmin
+  #   volumes:
+  #     - ./pgadmin:/var/lib/pgadmin
+  #   ports:
+  #     - ${PGADMIN_PORT}:80
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+  #     - PGADMIN_DEFAULT_PASSWORD=${DATABASE_PASSWORD}
+  #   restart: always
 
-  backend:
-    depends_on:
-      - db
-    build:
-      context: .
-    container_name: backend
-    ports:
-      - ${PORT}:3000
-    environment:
-      - APP_KEY=${APP_KEY}
-      - PORT=${PORT}
-      - WHITE_LIST_DOMAINS=${WHITE_LIST_DOMAINS}
-      - DATABASE_URL=postgresql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@postgres_db:${DATABASE_PORT}/${DATABASE_NAME}?schema=public
-      - CRYPTOJS_KEY=${CRYPTOJS_KEY}
-      - CRYPTOJS_IV=${CRYPTOJS_IV}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
-    volumes:
-      - ./src:/usr/src/app/src
+  # backend:
+  #   depends_on:
+  #     - db
+  #   build:
+  #     context: .
+  #   container_name: backend
+  #   ports:
+  #     - ${PORT}:3000
+  #   environment:
+  #     - APP_KEY=${APP_KEY}
+  #     - PORT=${PORT}
+  #     - WHITE_LIST_DOMAINS=${WHITE_LIST_DOMAINS}
+  #     - DATABASE_URL=postgresql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@postgres_db:${DATABASE_PORT}/${DATABASE_NAME}?schema=public
+  #     - CRYPTOJS_KEY=${CRYPTOJS_KEY}
+  #     - CRYPTOJS_IV=${CRYPTOJS_IV}
+  #     - JWT_SECRET=${JWT_SECRET}
+  #     - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+  #   volumes:
+  #     - ./src:/usr/src/app/src

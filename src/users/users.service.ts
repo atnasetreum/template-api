@@ -1,26 +1,22 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
-
-import { PrismaClient } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { SharedService } from '@shared/shared.service';
+import { PrismaService } from '@shared/services';
 
 @Injectable()
-export class UsersService extends PrismaClient implements OnModuleInit {
-  constructor(private readonly sharedService: SharedService) {
-    super();
-  }
-
-  async onModuleInit() {
-    await this.$connect();
-  }
+export class UsersService {
+  constructor(
+    private readonly sharedService: SharedService,
+    private readonly prismaService: PrismaService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const passwordEncrypted = await this.sharedService.encryptPassword(
       createUserDto.password,
     );
 
-    const user = await this.user.create({
+    const user = await this.prismaService.user.create({
       data: {
         ...createUserDto,
         password: passwordEncrypted,
@@ -31,7 +27,7 @@ export class UsersService extends PrismaClient implements OnModuleInit {
   }
 
   async findAll() {
-    const users = await this.user.findMany({
+    const users = await this.prismaService.user.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'desc' },
       /*include: {
@@ -43,7 +39,7 @@ export class UsersService extends PrismaClient implements OnModuleInit {
   }
 
   async findOne(id: string) {
-    const user = await this.user.findUnique({
+    const user = await this.prismaService.user.findUnique({
       where: { id, isActive: true },
     });
 
@@ -57,7 +53,7 @@ export class UsersService extends PrismaClient implements OnModuleInit {
   async update(id: string, updateUserDto: UpdateUserDto) {
     await this.findOne(id);
 
-    const user = await this.user.update({
+    const user = await this.prismaService.user.update({
       where: { id },
       data: updateUserDto,
     });
@@ -68,7 +64,7 @@ export class UsersService extends PrismaClient implements OnModuleInit {
   async remove(id: string) {
     await this.findOne(id);
 
-    const user = await this.user.update({
+    const user = await this.prismaService.user.update({
       where: { id },
       data: {
         isActive: false,

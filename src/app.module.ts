@@ -20,7 +20,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 100,
+        limit: 250,
       },
     ]),
     AuthModule,
